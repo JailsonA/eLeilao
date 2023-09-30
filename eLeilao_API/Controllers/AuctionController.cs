@@ -9,11 +9,13 @@ namespace eLeilao_API.Controllers
     {
         private readonly ILogger<AuctionController> _logger;
         private readonly IProductRepository _productRepo;
+        private readonly IAuctionRepository _auctionRepo;
 
-        public AuctionController(ILogger<AuctionController> logger, IUsersRepository usersRepository, IProductRepository productRepo)
+        public AuctionController(ILogger<AuctionController> logger, IUsersRepository usersRepository, IProductRepository productRepo, IAuctionRepository auctionRepo)
         {
             _logger = logger;
             _productRepo = productRepo;
+            _auctionRepo = auctionRepo;
         }
 
 
@@ -34,6 +36,23 @@ namespace eLeilao_API.Controllers
                 {
                     return BadRequest(ex);
                 }
+            }
+        }
+
+        [HttpPost]
+        public IActionResult CreateAuction(AuctionMV auctionMV)
+        {
+            try
+            {
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+                if (_auctionRepo.CreateAuction(auctionMV))
+                    return Ok("Auction add");
+                else
+                    return BadRequest("Auction not add");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
             }
         }
     }

@@ -9,6 +9,6 @@ namespace DataAccessLayer.IRepository
 {
     public interface IAuctionRepository
     {
-        bool CreateAuction(AuctionMV auction, int UserId);
+        bool CreateAuction(AuctionMV auction);
     }
 }
