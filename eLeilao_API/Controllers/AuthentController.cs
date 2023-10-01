@@ -1,5 +1,6 @@
 ﻿using DataAccessLayer.IRepository;
 using DataAccessLayer.Model;
+using DataAccessLayer.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +20,7 @@ namespace eLeilao_API.Controllers
             _usersRepo = usersRepository;
             _authRepo = authRepo;
         }
-
+        [PrivilegeUser("Admin")]
         [HttpPost]
         public IActionResult CreatUsers(UserMV user, int UserId)
         {
@@ -37,6 +38,7 @@ namespace eLeilao_API.Controllers
             }
         }
 
+        //[PrivilegeUser("Admin", _userI)]
         [HttpPost]
         public IActionResult DelleteUser(int userId, int userLogged)
         {
@@ -60,7 +62,7 @@ namespace eLeilao_API.Controllers
             try
             {
                 if (!ModelState.IsValid) return BadRequest(ModelState);
-                string token = _authRepo.logIn(login);
+                var token = _authRepo.logIn(login);
                 if (token != null)
                     return Ok(token);
                 else

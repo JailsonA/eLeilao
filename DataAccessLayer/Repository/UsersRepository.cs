@@ -29,7 +29,7 @@ namespace DataAccessLayer.Repository
                 else
                 {
                     var userLog = _context.Users.FirstOrDefault(x => x.UserId == userLogged);
-                    if (userLog != null && userLog.UserType == (int)UserTypeEnum.Admin)
+                    if (userLog != null && userLog.UserType == UserTypeEnum.Admin)
                     {
                         var user = new UserModel()
                         {
@@ -37,7 +37,7 @@ namespace DataAccessLayer.Repository
                             Contact = userMV.Contact,
                             Email = userMV.Email,
                             Password = userMV.Password,
-                            UserType = 1,
+                            UserType = UserTypeEnum.User,
                             status = 1
                         };
                         _context.Users.Add(user);

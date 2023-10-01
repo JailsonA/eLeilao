@@ -54,12 +54,12 @@ namespace DataAccessLayer.Utils
             {
                 if (user != null)
                 {
-                    string signingKey = GenerateRandomSecretKey(64);
+                    string signingKey = _configuration["Jwt:Key"];
 
-                    // Atualiza a chave no arquivo appsettings.json
-                    string appSettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "sKey.json");
-                    bool isUpdate = UpdateOrCreateJwtKeyForUser(appSettingsPath, user.UserId, signingKey);
-                    if (!isUpdate) return null;
+                    //// Atualiza a chave no arquivo appsettings.json
+                    //string appSettingsPath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
+                    //bool isUpdate = UpdateOrCreateJwtKeyForUser(appSettingsPath, user.UserId, signingKey);
+                    //if (!isUpdate) return null;
 
                     var claims = new[]
                     {

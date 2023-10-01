@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataAccessLayer.Data.Enum;
 using DataAccessLayer.Utils;
 
 namespace DataAccessLayer.Model
@@ -16,7 +17,7 @@ namespace DataAccessLayer.Model
         public string Contact { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-        public int UserType { get; set; }
+        public UserTypeEnum UserType { get; set; }
         public int status { get; set; }
         public DateTime CreatedAt { get; set; }
 
