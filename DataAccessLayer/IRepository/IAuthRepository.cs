@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.IRepository
 {
-    public interface IProductRepository
+    public interface IAuthRepository
     {
-        bool AddProduct(ProductMV product);
-        List<ProductModel> GetAllProduct();
+        string logIn(LoginModel login);
     }
 }

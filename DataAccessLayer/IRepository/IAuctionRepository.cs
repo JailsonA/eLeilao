@@ -10,5 +10,13 @@ namespace DataAccessLayer.IRepository
     public interface IAuctionRepository
     {
         bool CreateAuction(AuctionMV auction);
+        bool AddBid(BidMV bidMV);
+
+        List<AuctionModel> GetAllAuction(int userId);
+        List<BidModel> GetAllBids(int userId);
+        bool AuctionStatus(int auctionId);
+        bool UpdateAuction(AuctionMV auctionMV);
+        bool DeleteAuction(int auctionId);
+        bool AddAuctionMessage(int auctionId, string message);
     }
 }

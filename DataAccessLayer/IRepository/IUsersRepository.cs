@@ -10,5 +10,8 @@ namespace DataAccessLayer.IRepository
     public interface IUsersRepository
     {
         bool AddUser(UserMV userMV, int userLogged);
+        bool DeleteUser(int userId, int userLogged);
+        List<UserModel> GetAllUsers(int userLogged);
+        List<UserMV> GetAllUsersByAuction(int auctionId);
     }
 }

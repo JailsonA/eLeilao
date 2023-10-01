@@ -60,7 +60,11 @@ namespace DataAccessLayer.Migrations
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     CreatorUserId = table.Column<int>(type: "int", nullable: false),
                     Message = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    InitialValue = table.Column<float>(type: "real", nullable: false),
+                    FinalValue = table.Column<float>(type: "real", nullable: false),
+                    BidValue = table.Column<float>(type: "real", nullable: true),
+                    WinnerUserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -70,16 +70,28 @@ namespace DataAccessLayer.Migrations
                     b.Property<bool>("AuctionStatus")
                         .HasColumnType("bit");
 
+                    b.Property<float?>("BidValue")
+                        .HasColumnType("real");
+
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("CreatorUserId")
                         .HasColumnType("int");
 
+                    b.Property<float>("FinalValue")
+                        .HasColumnType("real");
+
+                    b.Property<float>("InitialValue")
+                        .HasColumnType("real");
+
                     b.Property<string>("Message")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WinnerUserId")
                         .HasColumnType("int");
 
                     b.HasKey("AuctionId");

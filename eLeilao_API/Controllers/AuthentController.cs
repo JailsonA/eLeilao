@@ -11,11 +11,13 @@ namespace eLeilao_API.Controllers
     {
         private readonly ILogger<AuthentController> _logger;
         private readonly IUsersRepository _usersRepo;
+        private readonly IAuthRepository _authRepo;
 
-        public AuthentController(ILogger<AuthentController> logger, IUsersRepository usersRepository)
+        public AuthentController(ILogger<AuthentController> logger, IUsersRepository usersRepository, IAuthRepository authRepo)
         {
             _logger = logger;
             _usersRepo = usersRepository;
+            _authRepo = authRepo;
         }
 
         [HttpPost]
@@ -34,5 +36,41 @@ namespace eLeilao_API.Controllers
                 return BadRequest(ex);
             }
         }
+
+        [HttpPost]
+        public IActionResult DelleteUser(int userId, int userLogged)
+        {
+            try
+            {
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+                if (_usersRepo.DeleteUser(userId, userLogged))
+                    return Ok("User delete");
+                else
+                    return BadRequest("User not delete");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult Login(LoginModel login)
+        {
+            try
+            {
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+                string token = _authRepo.logIn(login);
+                if (token != null)
+                    return Ok(token);
+                else
+                    return BadRequest("User not found");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
     }
 }

@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataAccessLayer.Utils;
 
 namespace DataAccessLayer.Model
 {
@@ -23,5 +24,23 @@ namespace DataAccessLayer.Model
         // Propriedades de navegação para acessar os objetos relacionados
         public List<AssociationModel>? Associations { get; set; }
         public List<BidModel>? Bids { get; set; }
+
+        /*encarregar o model com a responsabilidade de gerenciar as senhas*/
+        public bool PasswordIsValid(string password)
+        {
+            return BCrypt.Net.BCrypt.Verify(password, Password);
+        }
+
+        public void SetPasswordHash()
+        {
+            Password = Password.GerarHash();
+        }
+
+        public string SetNewPassword(string password)
+        {
+            string newPassword = Guid.NewGuid().ToString().Substring(0, 6);
+            Password = newPassword.GerarHash();
+            return newPassword;
+        }
     }
 }

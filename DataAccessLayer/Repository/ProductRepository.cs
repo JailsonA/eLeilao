@@ -23,7 +23,7 @@ namespace DataAccessLayer.Repository
             try
             {
                 var user = _context.Users.FirstOrDefault(u => u.UserId == product.UserId);
-                if (product == null && user == null)
+                if (product == null || user == null)
                 {
                     return false;
                 }
@@ -54,6 +54,17 @@ namespace DataAccessLayer.Repository
 
                 return false;
             }
+        }
+
+        public List<ProductModel> GetAllProduct()
+        {
+            var allProduct = _context.Products.ToList();
+            if (allProduct.Count > 0)
+            {
+                return allProduct;
+            }else
+                return new List<ProductModel>(null);
+
         }
     }
 }
