@@ -1,0 +1,53 @@
+﻿@using Newtonsoft.Json;
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor;
+@model AuctionMV
+@{
+    string Token = HttpContextAccessor.HttpContext.Session.GetString("Token");
+    string userJson = HttpContextAccessor.HttpContext.Session.GetString("User");
+    var user = JsonConvert.DeserializeObject<UserMV>(userJson);
+    //time left
+    var timeLeft = Model.AuctionEndDate - DateTime.Now;
+    var daysLeft = (int)Math.Floor(timeLeft.TotalDays);
+    float? finalV = Model.FinalValue + Model.InitialValue;
+
+}
+
+
+<center>
+    <div class="alert alert-danger alert-dismissible fade show col-6" role="alert">
+        <i class="bi bi-exclamation-octagon me-1"></i>
+        Live: @Model.Message
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div class="col-6">
+        <div class="card">
+            <div class="bg-image hover-overlay ripple" data-mdb-ripple-color="light">
+                <img src="https://mdbcdn.b-cdn.net/img/new/standard/nature/111.webp" class="img-fluid" />
+                <a href="#!">
+                    <div class="mask" style="background-color: rgba(251, 251, 251, 0.15);"></div>
+                </a>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">Current Bid: @finalV - <span class="badge bg-dark text-white">@(Model.WinnerUserId == user.UserId ? "Your" : "")</span></h3>
+                <h5 class="card-title">Auction: @Model.AuctionName - <span>Time left > @daysLeft days</span></h5>
+                <p class="card-text">Reserved Amt: @Model.InitialValue</p>
+                <p class="card-text">Increment: @Model.BidValue</p>
+                <p class="card-text">Property: @Model.Address</p>
+                <p class="card-text">Started: @Model.AuctionStartDate.ToString("yyyy-MM-ddTHH:mm")</p>
+                @if (user.UserType == "Admin")
+                {
+                    <form class="row g-3" method="post" asp-action="SendMessage">
+                        <div class="col-md-12">
+                            <input type="text" name="message" class="form-control" placeholder="Message">
+                        </div>
+                        <input type="hidden" name="auctionId" value="@Model.AuctionId" />
+                        <div class="text-center">
+                            <button id="subMessage" type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</center>
+

@@ -63,7 +63,7 @@ namespace DataAccessLayer.Repository
             {
                 return allProduct;
             }else
-                return new List<ProductModel>(null);
+                return null;
 
         }
     }

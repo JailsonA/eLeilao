@@ -18,6 +18,7 @@ namespace DataAccessLayer.Model
         public bool AuctionStatus { get; set; }
         public int ProductId { get; set; }
         public int CreatorUserId { get; set; }
+        public string Address { get; set; }
         public string? Message { get; set; }
         public DateTime? CreatedAt { get; set; }
         public float InitialValue { get; set; }

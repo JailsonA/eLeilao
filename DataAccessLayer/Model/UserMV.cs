@@ -15,9 +15,7 @@ namespace DataAccessLayer.Model
         public string Email { get; set; }
         public string Password { get; set; }
         public UserTypeEnum? UserType { get; set; }
-        public int? AssociationId { get; set; }
-        public int? BidId { get; set; }
-        public int? AuctionId { get; set; }
+        public int AuctionId { get; set; }
         public DateTime? CreatedAt { get; set; }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using DataAccessLayer.Data;
 using DataAccessLayer.IRepository;
 using DataAccessLayer.Model;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,10 +41,10 @@ namespace DataAccessLayer.Repository
                     AuctionStatus = true,
                     ProductId = product.ProductId,
                     CreatorUserId = user.UserId,
-                    Message = auctionMV.Message,
                     CreatedAt = DateTime.Now,
                     InitialValue = auctionMV.InitialValue,
-                    BidValue = auctionMV.BidValue
+                    BidValue = auctionMV.BidValue,
+                    Address = auctionMV.Address
                 };
 
                 _context.Auctions.Add(auction);
@@ -78,6 +80,55 @@ namespace DataAccessLayer.Repository
                 return null;
             }
         }
+
+        //get auction by user association
+        public AuctionModel GetAuctionByUser(int userId)
+        {
+            try
+            {
+                var association = _context.Associations
+                    .FirstOrDefault(x => x.UserId == userId);
+
+                if (association != null)
+                {
+                    var auction = _context.Auctions.FirstOrDefault(x => x.AuctionId == association.AuctionId);
+
+                    var auctionMV = new AuctionModel
+                    {
+                        AuctionId = auction.AuctionId,
+                        AuctionName = auction.AuctionName,
+                        AuctionStartDate = auction.AuctionStartDate,
+                        AuctionEndDate = auction.AuctionEndDate,
+                        AuctionDescription = auction.AuctionDescription,
+                        AuctionStatus = auction.AuctionStatus,
+                        ProductId = auction.ProductId,
+                        CreatorUserId = auction.CreatorUserId,
+                        Address = auction.Address,
+                        Message = auction.Message,
+                        CreatedAt = auction.CreatedAt,
+                        InitialValue = auction.InitialValue,
+                        FinalValue = auction.FinalValue,
+                        BidValue = auction.BidValue,
+                        WinnerUserId = auction.WinnerUserId
+                    };
+
+                    if (auction.AuctionEndDate < DateTime.Now)
+                    {
+                        auction.AuctionStatus = false;
+                        _context.SaveChanges();
+                    }
+
+                    return auctionMV;
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
 
         //update auction status if time end  ou if admin finish auction
         public bool AuctionStatus(int auctionId)
@@ -132,6 +183,7 @@ namespace DataAccessLayer.Repository
                     auction.Message = auctionMV.Message;
                     auction.InitialValue = auctionMV.InitialValue;
                     auction.BidValue = auctionMV.BidValue;
+                    auction.Address = auctionMV.Address;
                     _context.SaveChanges();
                     return true;
                 }
@@ -149,25 +201,48 @@ namespace DataAccessLayer.Repository
         //delete auction by update status
         public bool DeleteAuction(int auctionId)
         {
+            var transaction = _context.Database.BeginTransaction();
             try
             {
                 var auction = _context.Auctions.FirstOrDefault(x => x.AuctionId == auctionId);
-                if (auction != null)
+                if (auction == null)
                 {
-                    auction.AuctionStatus = false;
-                    _context.SaveChanges();
-                    return true;
-                }
-                else
-                {
+                    transaction.Rollback();
                     return false;
                 }
+
+                var bids = _context.Bids.Where(x => x.AuctionId == auctionId).ToList();
+                foreach (var bid in bids)
+                {
+                    _context.Bids.Remove(bid);
+                }
+
+                var associationsRemove = _context.Associations.Where(x => x.AuctionId == auctionId).ToList();
+                foreach (var association in associationsRemove)
+                {
+                    var user = _context.Users.FirstOrDefault(x => x.UserId == association.UserId);
+                    if (user != null)
+                    {
+                        _context.Users.Remove(user);
+                    }
+                    _context.Associations.Remove(association);
+                }
+
+
+                _context.Auctions.Remove(auction);
+
+                _context.SaveChanges();
+                transaction.Commit();
+
+                return true;
             }
             catch (Exception)
             {
-                return true;
+                transaction.Rollback();
+                return false;
             }
         }
+
 
         //add auction message
         public bool AddAuctionMessage(int auctionId, string message)
@@ -189,6 +264,46 @@ namespace DataAccessLayer.Repository
             catch (Exception)
             {
                 return true;
+            }
+        }
+
+        //get auction by auctionId
+        public AuctionModel GetAuctionById(int auctionId)
+        {
+            try
+            {
+                var auction = _context.Auctions.FirstOrDefault(x => x.AuctionId == auctionId);
+                if (auction != null)
+                {
+                    var auctionMV = new AuctionModel
+                    {
+                        AuctionId = auction.AuctionId,
+                        AuctionName = auction.AuctionName,
+                        AuctionStartDate = auction.AuctionStartDate,
+                        AuctionEndDate = auction.AuctionEndDate,
+                        AuctionDescription = auction.AuctionDescription,
+                        AuctionStatus = auction.AuctionStatus,
+                        ProductId = auction.ProductId,
+                        CreatorUserId = auction.CreatorUserId,
+                        Address = auction.Address,
+                        Message = auction.Message,
+                        CreatedAt = auction.CreatedAt,
+                        InitialValue = auction.InitialValue,
+                        FinalValue = auction.FinalValue,
+                        BidValue = auction.BidValue,
+                        WinnerUserId = auction.WinnerUserId
+                    };
+
+                    return auctionMV;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 

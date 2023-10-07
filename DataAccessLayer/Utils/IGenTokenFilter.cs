@@ -99,35 +99,28 @@ namespace DataAccessLayer.Utils
         {
             try
             {
-                // Lê o conteúdo do arquivo appsettings.json
                 string json = File.ReadAllText(appSettingsPath);
 
-                // Converte o JSON em um objeto representando as configurações
                 AppSettings appSettings = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json);
 
-                // Verifica se a chave JwtKeys já existe no objeto AppSettings
                 if (appSettings.JwtKeys == null)
                 {
                     appSettings.JwtKeys = new Dictionary<string, string>();
                 }
 
-                // Atualiza a chave JWT para o usuário específico
                 appSettings.JwtKeys[userId.ToString()] = newKey;
 
-                // Converte as configurações atualizadas de volta para JSON
                 string updatedJson = System.Text.Json.JsonSerializer.Serialize(appSettings, new JsonSerializerOptions
                 {
-                    WriteIndented = true // Para formatar o JSON de maneira legível
+                    WriteIndented = true
                 });
 
-                // Escreve o JSON atualizado de volta para o arquivo appsettings.json
                 File.WriteAllText(appSettingsPath, updatedJson);
 
                 return true;
             }
             catch (Exception ex)
             {
-                // Lide com exceções, se necessário
                 return false;
             }
         }

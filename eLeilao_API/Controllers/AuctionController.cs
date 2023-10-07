@@ -1,6 +1,9 @@
 using DataAccessLayer.IRepository;
 using DataAccessLayer.Model;
+using DataAccessLayer.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+
 namespace eLeilao_API.Controllers
 {
     [ApiController]
@@ -11,38 +14,42 @@ namespace eLeilao_API.Controllers
         private readonly IProductRepository _productRepo;
         private readonly IAuctionRepository _auctionRepo;
         private readonly IUsersRepository _usersRepo;
+        private readonly IDecToken _decToken;
 
-
-        public AuctionController(ILogger<AuctionController> logger, IUsersRepository usersRepository, 
+        public AuctionController(ILogger<AuctionController> logger,
                             IProductRepository productRepo, IAuctionRepository auctionRepo,
-                            IUsersRepository usersRepo)
+                            IUsersRepository usersRepo, IDecToken decToken)
         {
             _logger = logger;
             _productRepo = productRepo;
             _auctionRepo = auctionRepo;
             _usersRepo = usersRepo;
+            _decToken = decToken;
         }
 
 
-
+        [PrivilegeUser("Admin")]
         [HttpPost]
-        public IActionResult CreateProduct(ProductMV product)
+        public IActionResult CreateProduct(ProductMV product, [FromHeader(Name = "Authorization")] string authorizationHeader)
         {
+            string token = authorizationHeader.Substring("Bearer ".Length).Trim();
+            var userLogged = _decToken.GetLoggedUser(token);
+            product.UserId = userLogged.UserId;
+            try
             {
-                try
-                {
-                    if (!ModelState.IsValid) return BadRequest(ModelState);
-                    if (_productRepo.AddProduct(product))
-                        return Ok("Product add");
-                    else
-                        return BadRequest("Product not add");
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(ex);
-                }
+                if (!ModelState.IsValid) return BadRequest(ModelState);
+                if (_productRepo.AddProduct(product))
+                    return Ok("Product add");
+                else
+                    return BadRequest("Product not add");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
             }
         }
+
+        [PrivilegeUser("Admin")]
         [HttpGet]
         public IActionResult GetAllProduct()
         {
@@ -60,12 +67,16 @@ namespace eLeilao_API.Controllers
             }
         }
 
+        [PrivilegeUser("Admin")]
         [HttpPost]
-        public IActionResult CreateAuction(AuctionMV auctionMV)
+        public IActionResult CreateAuction(AuctionMV auctionMV, [FromHeader(Name = "Authorization")] string authorizationHeader)
         {
+            string token = authorizationHeader.Substring("Bearer ".Length).Trim();
+            var userLogged = _decToken.GetLoggedUser(token);
+            auctionMV.CreatorUserId = userLogged.UserId;
             try
             {
-                if (!ModelState.IsValid) return BadRequest(ModelState);
+                if (!ModelState.IsValid) return BadRequest("modelstate not valid");
                 if (_auctionRepo.CreateAuction(auctionMV))
                     return Ok("Auction add");
                 else
@@ -77,14 +88,18 @@ namespace eLeilao_API.Controllers
             }
         }
 
+        [PrivilegeUser("Admin")]
         [HttpPost]
-        public IActionResult AddMessage(int auctionId, string message)
+        public async Task<IActionResult> AddMessage(int auctionId, string message)
         {
             try
             {
                 if (!ModelState.IsValid) return BadRequest(ModelState);
                 if (_auctionRepo.AddAuctionMessage(auctionId, message))
+                {
+                    var auction = _auctionRepo.GetAuctionById(auctionId);
                     return Ok("Message add");
+                }
                 else
                     return BadRequest("Message not add");
             }
@@ -94,12 +109,15 @@ namespace eLeilao_API.Controllers
             }
         }
 
+        [PrivilegeUser("Admin")]
         [HttpGet]
-        public IActionResult GetAllAdmAuction(int userId)
+        public IActionResult GetAllAdmAuction([FromHeader(Name = "Authorization")] string authorizationHeader)
         {
+            string token = authorizationHeader.Substring("Bearer ".Length).Trim();
+            var userLogged = _decToken.GetLoggedUser(token);
             try
             {
-                var auctions = _auctionRepo.GetAllAuction(userId);
+                var auctions = _auctionRepo.GetAllAuction(userLogged.UserId);
                 if (auctions != null)
                     return Ok(auctions);
                 else
@@ -111,7 +129,29 @@ namespace eLeilao_API.Controllers
             }
         }
 
+
+        [PrivilegeUser("User")]
+        [HttpGet]
+        public IActionResult GetAllAuctionbyUser([FromHeader(Name = "Authorization")] string authorizationHeader)
+        {
+            string token = authorizationHeader.Substring("Bearer ".Length).Trim();
+            var userLogged = _decToken.GetLoggedUser(token);
+            try
+            {
+                var auctions = _auctionRepo.GetAuctionByUser(userLogged.UserId);
+                if (auctions != null)
+                    return Ok(auctions);
+                else
+                    return BadRequest(null);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
         //update auction status
+        [PrivilegeUser("Admin")]
         [HttpPost]
         public IActionResult AuctionStatus(int auctionId)
         {
@@ -130,6 +170,7 @@ namespace eLeilao_API.Controllers
         }
 
         //update auction info
+        [PrivilegeUser("Admin")]
         [HttpPost]
         public IActionResult UpdateAuction(AuctionMV auctionMV)
         {
@@ -148,12 +189,12 @@ namespace eLeilao_API.Controllers
         }
 
         //delete auction by update status
+        [PrivilegeUser("Admin")]
         [HttpPost]
-        public IActionResult DeleteAuction(int auctionId)
+        public IActionResult DeleteAuction(int auctionId, [FromHeader(Name = "Authorization")] string authorizationHeader)
         {
             try
             {
-                if (!ModelState.IsValid) return BadRequest(ModelState);
                 if (_auctionRepo.DeleteAuction(auctionId))
                     return Ok("Auction delete");
                 else
@@ -165,6 +206,26 @@ namespace eLeilao_API.Controllers
             }
         }
 
+
+        [PrivilegeUser("Admin")]
+        [HttpGet]
+        public IActionResult GetAllUserByAuction(int auctionId)
+        {
+            try
+            {
+                var users = _usersRepo.GetAllUsersByAuction(auctionId);
+                if (users != null)
+                    return Ok(users);
+                else
+                    return BadRequest("Users not found");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [PrivilegeUser("User")]
         [HttpPost]
         public IActionResult AddBid(BidMV bidMV)
         {
@@ -182,12 +243,15 @@ namespace eLeilao_API.Controllers
             }
         }
 
+        [PrivilegeUser("User")]
         [HttpGet]
-        public IActionResult GetAllBids(int userId)
+        public IActionResult GetAllBids([FromHeader(Name = "Authorization")] string authorizationHeader)
         {
+            string token = authorizationHeader.Substring("Bearer ".Length).Trim();
+            var userLogged = _decToken.GetLoggedUser(token);
             try
             {
-                var bids = _auctionRepo.GetAllBids(userId);
+                var bids = _auctionRepo.GetAllBids(userLogged.UserId);
                 if (bids != null)
                     return Ok(bids);
                 else
@@ -200,37 +264,10 @@ namespace eLeilao_API.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAllUsers(int userLogged)
+        public IActionResult getString()
         {
-            try
-            {
-                var users = _usersRepo.GetAllUsers(userLogged);
-                if (users != null)
-                    return Ok(users);
-                else
-                    return BadRequest("Users not found");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
-            }
+            return Ok("Hello World");
         }
 
-        [HttpGet]
-        public IActionResult GetAllUserByAuction(int auctionId)
-        {
-            try
-            {
-                var users = _usersRepo.GetAllUsersByAuction(auctionId);
-                if (users != null)
-                    return Ok(users);
-                else
-                    return BadRequest("Users not found");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
-            }
-        }
     }
 }

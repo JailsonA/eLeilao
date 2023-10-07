@@ -9,7 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddSignalR(o =>
+{
+    o.EnableDetailedErrors = true;
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<eLeilaoDbContext>();
@@ -18,6 +21,7 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IGenTokenFilter, GenTokenFilter>();
+builder.Services.AddScoped<IDecToken, DecToken>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("MyCorsProfile",
@@ -64,7 +68,6 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -73,7 +76,6 @@ if (app.Environment.IsDevelopment())
 }
 app.UseCors("MyCorsProfile");
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

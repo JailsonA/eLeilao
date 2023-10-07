@@ -17,6 +17,7 @@ namespace DataAccessLayer.Model
         public int ProductId { get; set; }
         public int CreatorUserId { get; set; }
         public string? Message { get; set; }
+        public string Address { get; set; }
         public float InitialValue { get; set; }
         public float? FinalValue { get; set; }
         public float? BidValue { get; set; }

@@ -40,20 +40,21 @@ namespace DataAccessLayer.Repository
                             UserType = UserTypeEnum.User,
                             status = 1
                         };
+                        user.SetPasswordHash();
+
                         _context.Users.Add(user);
                         _context.SaveChanges();
 
 
-                        if (userMV.AuctionId.HasValue)
+                        var associat = new AssociationModel()
                         {
-                            var associat = new AssociationModel()
-                            {
-                                UserId = user.UserId,
-                                AuctionId = userMV.AuctionId.Value
-                            };
-                            _context.Associations.Add(associat);
-                            _context.SaveChanges();
-                        }
+                            UserId = user.UserId,
+                            AuctionId = userMV.AuctionId
+                        };
+                        _context.Associations.Add(associat);
+                        _context.SaveChanges();
+
+
                         transaction.Commit();
                         return true;
                     }
@@ -82,10 +83,26 @@ namespace DataAccessLayer.Repository
                     var user = _context.Users.FirstOrDefault(x => x.UserId == userId);
                     if (user != null)
                     {
-                        user.status = 0;
+                        _context.Users.Remove(user);
                         _context.SaveChanges();
+
+                        var association = _context.Associations.Where(x => x.UserId == userId).ToList();
+                        if (association.Count > 0)
+                        {
+                            _context.Associations.RemoveRange(association);
+                            _context.SaveChanges();
+                        }
+
+                        var bid = _context.Bids.Where(x => x.UserId == userId).ToList();
+                        if (bid.Count > 0)
+                        {
+                            _context.Bids.RemoveRange(bid);
+                            _context.SaveChanges();
+                        }
+
                         transaction.Commit();
                         return true;
+
                     }
                     else
                     {

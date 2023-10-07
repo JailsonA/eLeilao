@@ -18,5 +18,7 @@ namespace DataAccessLayer.IRepository
         bool UpdateAuction(AuctionMV auctionMV);
         bool DeleteAuction(int auctionId);
         bool AddAuctionMessage(int auctionId, string message);
+        AuctionModel GetAuctionByUser(int userId);
+        AuctionModel GetAuctionById(int auctionId);
     }
 }
